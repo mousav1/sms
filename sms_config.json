@@ -1,0 +1,10 @@
+{
+    "default_driver": "Ghasedak",
+    "drivers": {
+      "Ghasedak": {
+        "api_key": "api_key",
+        "line_number": "line_number",
+        "host": "api.ghasedak.me"
+      }
+    }
+  }
