@@ -5,6 +5,7 @@ This is a Go Package for SMS Gateway
 List of supported gateways:
 
 -   [Ghasedak](https://ghasedak.me/)
+-   [Kavenegar](https://kavenegar.com)
 
 
 -  Will be added soon.
