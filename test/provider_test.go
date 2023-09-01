@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/mousav1/sms/config"
@@ -41,7 +42,7 @@ func TestNewSMSGateway(t *testing.T) {
 	}
 
 	// Verify the response
-	if !response.Success {
+	if http.StatusOK != response.Status {
 		t.Errorf("SMS sending failed: %s", response.Message)
 	}
 }

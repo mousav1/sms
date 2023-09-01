@@ -1,20 +1,22 @@
 package test
 
 import (
-	"github.com/mousav1/sms"
+	"net/http"
 	"testing"
+
+	"github.com/mousav1/sms"
+	"github.com/mousav1/sms/response"
 )
 
 func TestSMSGateway_SendSMS(t *testing.T) {
 	// Create a mock SMS provider for testing
 	mockProvider := &MockSMSProvider{
-		SendSMSFunc: func(to, message string) (sms.Response, error) {
+		SendSMSFunc: func(to, message string) (response.Response, error) {
 			// Simulate a successful response
-			response := sms.Response{
-				Success: true,
-				Code:    200,
-				Message: "SMS sent successfully",
-				ID:      12345,
+			response := response.Response{
+				Status:    200,
+				Message:   "SMS sent successfully",
+				MessageID: 12345,
 			}
 			return response, nil
 		},
@@ -34,17 +36,17 @@ func TestSMSGateway_SendSMS(t *testing.T) {
 	}
 
 	// Verify the response
-	if !response.Success {
+	if http.StatusOK != response.Status {
 		t.Errorf("SMS sending failed: %s", response.Message)
 	}
 }
 
 // MockSMSProvider is a mock implementation of the SMSProvider interface
 type MockSMSProvider struct {
-	SendSMSFunc func(to, message string) (sms.Response, error)
+	SendSMSFunc func(to, message string) (response.Response, error)
 }
 
 // SendSMS calls the SendSMSFunc function of the mock provider
-func (m *MockSMSProvider) SendSMS(to, message string) (sms.Response, error) {
+func (m *MockSMSProvider) SendSMS(to, message string) (response.Response, error) {
 	return m.SendSMSFunc(to, message)
 }
