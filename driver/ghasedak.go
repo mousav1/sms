@@ -7,14 +7,13 @@ import (
 	"net/url"
 
 	"github.com/mousav1/sms"
-	request "github.com/mousav1/sms/Request"
 	"github.com/mousav1/sms/config"
 	"github.com/mousav1/sms/errors"
+	"github.com/mousav1/sms/request"
 	"github.com/mousav1/sms/response"
 )
 
-// Ghasedak represents an SMS gateway provider.
-type Ghasedak struct {
+type GhasedakProvider struct {
 	APIKey     string
 	LineNumber string
 	Host       string
@@ -35,16 +34,15 @@ type MessageResult struct {
 }
 
 // CreateProvider creates an instance of the Ghasedak provider.
-func (g *Ghasedak) CreateProvider(config config.DriverConfig) (sms.SMSProvider, error) {
-	return &Ghasedak{
+func (g *GhasedakProvider) CreateProvider(config config.DriverConfig) (sms.SMSProvider, error) {
+	return &GhasedakProvider{
 		APIKey:     config.APIKey,
 		LineNumber: config.LineNumber,
 		Host:       config.Host,
 	}, nil
 }
 
-// SendSMS sends an SMS using Ghasedak.
-func (g *Ghasedak) SendSMS(to, message string) (response.Response, error) {
+func (g *GhasedakProvider) SendSMS(to, message string) (response.Response, error) {
 	apiURL := fmt.Sprintf("http://%s/v2/sms/send/simple?agent=go", g.Host)
 
 	body := url.Values{
@@ -60,26 +58,25 @@ func (g *Ghasedak) SendSMS(to, message string) (response.Response, error) {
 		"Accept-Charset": "utf-8",
 	}
 
-	request := request.NewRequest(g.APIKey, g.Host)
+	req := request.NewRequest(g.APIKey, g.Host)
 
-	resp, err := request.Execute(apiURL, "POST", body, headers)
-
+	resp, err := req.Execute(apiURL, "POST", body, headers)
+	if err != nil {
+		return response.Response{}, err
+	}
 	defer resp.Body.Close()
 
-	response := response.Response{}
-	response.Status = resp.StatusCode
-
-	if http.StatusOK != resp.StatusCode {
+	respBody := response.Response{Status: resp.StatusCode}
+	if resp.StatusCode != http.StatusOK {
 		re := new(ResultErrorGhasedak)
-		err = json.NewDecoder(resp.Body).Decode(&re)
-		if err != nil {
-			return response, &errors.Error{
+		if err := json.NewDecoder(resp.Body).Decode(&re); err != nil {
+			return respBody, &errors.Error{
 				Status:  resp.StatusCode,
 				Message: resp.Status,
 				Err:     err,
 			}
 		}
-		return response, &errors.Error{
+		return respBody, &errors.Error{
 			Status:  re.ResultGhasedak.Code,
 			Message: re.ResultGhasedak.Message,
 			Err:     err,
@@ -87,17 +84,17 @@ func (g *Ghasedak) SendSMS(to, message string) (response.Response, error) {
 	}
 
 	result := new(MessageResult)
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return response, &errors.Error{
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return respBody, &errors.Error{
 			Status:  resp.StatusCode,
 			Message: resp.Status,
 			Err:     err,
 		}
 	}
 
-	response.Message = result.Message
-	response.MessageID = int64(result.Items[0])
-
-	return response, nil
+	respBody.Message = result.ResultGhasedak.Message
+	if len(result.Items) > 0 {
+		respBody.MessageID = result.Items[0]
+	}
+	return respBody, nil
 }

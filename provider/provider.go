@@ -2,8 +2,8 @@ package provider
 
 import (
 	"fmt"
-	"github.com/mousav1/sms"
 
+	"github.com/mousav1/sms"
 	"github.com/mousav1/sms/config"
 	"github.com/mousav1/sms/driver"
 )
@@ -36,8 +36,10 @@ func NewSMSGateway(config *config.Config) (*sms.SMSGateway, error) {
 
 func GetProviderFactory(driverName string) (SMSProviderFactory, error) {
 	switch driverName {
+	case "Kavenegar":
+		return &driver.KavenegarProvider{}, nil
 	case "Ghasedak":
-		return &driver.Ghasedak{}, nil
+		return &driver.GhasedakProvider{}, nil
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driverName)
 	}
