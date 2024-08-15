@@ -89,15 +89,10 @@ func (g *mydriver) SendSMS(to, message string) (sms.Response, error) {}
 4- Add the driver to the provider.go in package:
 
 ```go
-func GetProviderFactory(driverName string) (SMSProviderFactory, error) {
-	switch driverName {
-	case "Ghasedak":
-		return &driver.Ghasedak{}, nil
-	case "mydriver":
-		return &driver.mydriver{}, nil
-	default:
-		return nil, fmt.Errorf("unsupported driver: %s", driverName)
-	}
+var providerFactories = map[string]SMSProviderFactory{
+	"Kavenegar": &driver.KavenegarProvider{},
+	"Ghasedak":  &driver.GhasedakProvider{},
+	"mydriver":  &driver.mydriver{},
 }
 ```
 
