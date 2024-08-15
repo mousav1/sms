@@ -1,11 +1,11 @@
 package sms
 
 import (
-	"encoding/json"
-	"os"
+	"fmt"
 
 	"github.com/mousav1/sms/config"
 	"github.com/mousav1/sms/response"
+	"github.com/spf13/viper"
 )
 
 // SMSProvider defines the interface that SMS gateway providers should implement.
@@ -24,15 +24,17 @@ func (g *SMSGateway) SendSMS(to, message string) (response.Response, error) {
 }
 
 func LoadConfig(filename string) (*config.Config, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
+	viper.SetConfigFile(filename)
+	viper.SetConfigType("json")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
-	var config config.Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, err
+	var cfg config.Config
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
 
-	return &config, nil
+	return &cfg, nil
 }

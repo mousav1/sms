@@ -12,16 +12,22 @@ type SMSProviderFactory interface {
 	CreateProvider(config config.DriverConfig) (sms.SMSProvider, error)
 }
 
+var providerFactories = map[string]SMSProviderFactory{
+	"Kavenegar": &driver.KavenegarProvider{},
+	"Ghasedak":  &driver.GhasedakProvider{},
+}
+
 func NewSMSGateway(config *config.Config) (*sms.SMSGateway, error) {
+
 	driverName := config.DefaultDriver
 	driverConfig, exists := config.Drivers[driverName]
 	if !exists {
 		return nil, fmt.Errorf("default driver '%s' not found in the configuration", driverName)
 	}
 
-	providerFactory, err := GetProviderFactory(driverName)
-	if err != nil {
-		return nil, err
+	providerFactory, exists := providerFactories[driverName]
+	if !exists {
+		return nil, fmt.Errorf("unsupported driver: %s", driverName)
 	}
 
 	provider, err := providerFactory.CreateProvider(driverConfig)
@@ -29,18 +35,10 @@ func NewSMSGateway(config *config.Config) (*sms.SMSGateway, error) {
 		return nil, err
 	}
 
-	return &sms.SMSGateway{
-		Provider: provider,
-	}, nil
+	return &sms.SMSGateway{Provider: provider}, nil
 }
 
-func GetProviderFactory(driverName string) (SMSProviderFactory, error) {
-	switch driverName {
-	case "Kavenegar":
-		return &driver.KavenegarProvider{}, nil
-	case "Ghasedak":
-		return &driver.GhasedakProvider{}, nil
-	default:
-		return nil, fmt.Errorf("unsupported driver: %s", driverName)
-	}
+// SetProviderFactories allows setting provider factories for testing.
+func SetProviderFactories(factories map[string]SMSProviderFactory) {
+	providerFactories = factories
 }

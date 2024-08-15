@@ -25,15 +25,20 @@ In the configuration file, you can choose the default driver and also set the se
 
 ```json
 {
-    "default_driver": "Ghasedak",
-    "drivers": {
-      "Ghasedak": {
-        "api_key": "api_key",
-        "line_number": "line_number",
-        "host": "api.ghasedak.me"
-      }
+  "default_driver": "Ghasedak",
+  "drivers": {
+    "Ghasedak": {
+      "api_key": "your-ghasedak-api-key",
+      "line_number": "your-ghasedak-line-number",
+      "host": "api.ghasedak.io"
+    },
+    "Kavenegar": {
+      "api_key": "your-kavenegar-api-key",
+      "line_number": "your-kavenegar-line-number",
+      "host": "api.kavenegar.com"
     }
   }
+}
 ```
 
 
@@ -42,19 +47,19 @@ In the configuration file, you can choose the default driver and also set the se
 In your code just use it like this.
 
 ```go
-	config, err := sms.LoadConfig("sms_config.json")
+
+	cfg, err := config.LoadConfig("config.json")
 	if err != nil {
-		fmt.Println("Failed to load SMS smsGateway configuration:", err)
+		log.Fatalf("error loading config: %v", err)
+	}
+	// Create an SMS gateway using the loaded configuration
+	smsGateway, err := provider.NewSMSGateway(configFile)
+	if err != nil {
+		fmt.Println("Failed to create SMS gateway:", err)
 		return
 	}
 
-	smsGateway, err := provider.NewSMSGateway(config)
-	if err != nil {
-		fmt.Println("Failed to create SMS smsGateway:", err)
-		return
-	}
-
-	// Use the SMS smsGateway to send messages
+	// Use the SMS gateway to send messages
 	response, err := smsGateway.SendSMS("Number", "message")
 	if err != nil {
 		fmt.Println("Failed to send SMS:", err)
