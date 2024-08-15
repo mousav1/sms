@@ -14,7 +14,7 @@ List of supported gateways:
 ## Install
 
 ```bash
-go get https://github.com/mousav1/sms
+go get github.com/mousav1/sms
 ```
 
 ## Configure
